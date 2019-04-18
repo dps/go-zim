@@ -7,17 +7,6 @@ import (
 	"os"
 )
 
-const defaultOffsetSize = 4
-const extendedOffsetSize = 8
-
-func clusterOffsetSize(clusterInformation uint8) uint8 {
-	return 4 << ((clusterInformation & 16) >> 4)
-}
-
-func clusterCompression(clusterInformation uint8) uint8 {
-	return clusterInformation & 15
-}
-
 func blobReader(clusterReader io.Reader, offsetSize int64, blobPosition uint32) (
 	reader io.Reader, blobSize int64, err error) {
 
@@ -65,31 +54,6 @@ func blobReader(clusterReader io.Reader, offsetSize int64, blobPosition uint32) 
 
 	blobSize = nextBlobPointer - thisBlobPointer
 	reader = io.LimitReader(clusterReader, blobSize)
-	return
-}
-
-func (z *File) clusterReader(clusterPosition uint32) (reader io.Reader, clusterInformation uint8, err error) {
-	if clusterPosition >= z.ClusterCount() {
-		err = errors.New("zim: invalid cluster position")
-		return
-	}
-	var clusterPointer = z.clusterPointerAtPos(clusterPosition)
-	seek(z.f, int64(clusterPointer))
-	clusterInformation = readUint8(z.f)
-	var compression = clusterCompression(clusterInformation)
-	switch compression {
-	case 0, 1: // uncompressed
-		reader = z.f
-	case 4: // xz compressed
-		if err = z.xzReader.Reset(z.f); err == nil {
-			z.xzReader.Multistream(false)
-			reader = z.xzReader
-		}
-	default:
-		// 2: zlib compressed (not used anymore)
-		// 3: bzip2 compressed (not used anymore)
-		err = errors.New("zim: unsupported cluster compression")
-	}
 	return
 }
 
