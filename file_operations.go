@@ -3,6 +3,7 @@ package zim
 import (
 	"bufio"
 	"encoding/binary"
+	"io"
 	"os"
 )
 
@@ -27,10 +28,24 @@ func readUint32(f *os.File) uint32 {
 	return binary.LittleEndian.Uint32(arr[:byteLen])
 }
 
+func readUint32R(r io.Reader) uint32 {
+	const byteLen = 4
+	var arr [byteLen]byte
+	r.Read(arr[:byteLen])
+	return binary.LittleEndian.Uint32(arr[:byteLen])
+}
+
 func readUint64(f *os.File) uint64 {
 	const byteLen = 8
 	var arr [byteLen]byte
 	f.Read(arr[:byteLen])
+	return binary.LittleEndian.Uint64(arr[:byteLen])
+}
+
+func readUint64R(r io.Reader) uint64 {
+	const byteLen = 8
+	var arr [byteLen]byte
+	r.Read(arr[:byteLen])
 	return binary.LittleEndian.Uint64(arr[:byteLen])
 }
 
