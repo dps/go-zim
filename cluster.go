@@ -99,7 +99,7 @@ func (z *File) ClusterAt(clusterPosition uint32) (Cluster, error) {
 		return c, clusterReaderErr
 	}
 
-	var clusterData, clusterDataErr = ioutil.ReadAll(clusterReader)
+	var clusterData, clusterDataErr = ioutil.ReadAll(io.LimitReader(clusterReader, int64(maxClusterLen)))
 
 	if clusterDataErr != nil {
 		return c, clusterDataErr
