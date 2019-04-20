@@ -71,7 +71,6 @@ func main() {
 		var cluster, clusterErr = z.ClusterAt(clusterPosition)
 
 		if clusterErr != nil {
-			log.Println(clusterErr)
 			continue
 		}
 
