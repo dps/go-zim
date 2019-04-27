@@ -14,7 +14,7 @@ const (
 	NamespaceCategoriesText                   = Namespace('U')
 	NamespaceCategoriesArticleList            = Namespace('V')
 	NamespaceCategoriesPerArticleCategoryList = Namespace('W')
-	NamespaceFulltextIndex                    = Namespace('X') // fulltext index in "ZIM Index Format"
+	NamespaceFulltextIndex                    = Namespace('X') // Xapian fulltext index
 )
 
 func (n Namespace) String() string { return string(n) }
