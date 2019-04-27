@@ -15,11 +15,12 @@ const defaultLimitEntries = 100
 func (z *File) EntryWithURL(namespace Namespace, url []byte) (
 	entry DirectoryEntry, urlPosition uint32, found bool) {
 	// more optimized version of entryWithPrefix
-	var firstURLPosition uint64
-	var lastURLPosition = uint64(z.header.articleCount - 1)
+	var firstURLPosition int64
+	var currentURLPos int64
+	var lastURLPosition = int64(z.header.articleCount - 1)
 	for firstURLPosition <= lastURLPosition {
-		urlPosition = uint32((firstURLPosition + lastURLPosition) >> 1)
-		entry = z.readDirectoryEntry(z.urlPointerAtPos(urlPosition), 0)
+		currentURLPos = (firstURLPosition + lastURLPosition) >> 1
+		entry = z.readDirectoryEntry(z.urlPointerAtPos(uint32(currentURLPos)), 0)
 		var c = cmpNs(entry.namespace, namespace)
 		if c == 0 {
 			c = bytes.Compare(entry.url, url)
@@ -29,11 +30,12 @@ func (z *File) EntryWithURL(namespace Namespace, url []byte) (
 			}
 		}
 		if c < 0 {
-			firstURLPosition = uint64(urlPosition + 1)
+			firstURLPosition = currentURLPos + 1
 		} else {
-			lastURLPosition = uint64(urlPosition - 1)
+			lastURLPosition = currentURLPos - 1
 		}
 	}
+	urlPosition = uint32(currentURLPos)
 	return
 }
 
@@ -158,22 +160,23 @@ func (z *File) entryWithPrefix(
 	namespace Namespace,
 	prefix []byte) (
 	entry DirectoryEntry, position uint32, found bool) {
-	var firstPosition uint64
-	var lastPosition = uint64(z.header.articleCount - 1)
+	var firstPosition int64
+	var currentPosition int64
+	var lastPosition = int64(z.header.articleCount - 1)
 	for firstPosition <= lastPosition {
-		position = uint32((firstPosition + lastPosition) >> 1)
-		entry = z.readDirectoryEntry(pointerAtPosition(position), 0)
+		currentPosition = (firstPosition + lastPosition) >> 1
+		entry = z.readDirectoryEntry(pointerAtPosition(uint32(currentPosition)), 0)
 		var c = cmpNs(entry.namespace, namespace)
 		if c == 0 {
 			c = cmpPrefix(chooseField(&entry), prefix)
 			if c == 0 {
 				// we found an entry with the given prefix
-				if position == 0 {
+				if currentPosition == 0 {
 					// already lowest position
 					found = true
 					break
 				}
-				var prevEntry = z.readDirectoryEntry(pointerAtPosition(position-1), 0)
+				var prevEntry = z.readDirectoryEntry(pointerAtPosition(uint32(currentPosition-1)), 0)
 				if prevEntry.namespace != namespace || !bytes.HasPrefix(chooseField(&prevEntry), prefix) {
 					// we found the lowest position
 					found = true
@@ -184,11 +187,12 @@ func (z *File) entryWithPrefix(
 			}
 		}
 		if c < 0 {
-			firstPosition = uint64(position + 1)
+			firstPosition = currentPosition + 1
 		} else {
-			lastPosition = uint64(position - 1)
+			lastPosition = currentPosition - 1
 		}
 	}
+	position = uint32(currentPosition)
 	return
 }
 
