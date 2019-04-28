@@ -202,20 +202,19 @@ func (z *File) entriesWithPrefix(
 	namespace Namespace,
 	prefix []byte,
 	limit int) []DirectoryEntry {
-
-	if limit <= 0 {
-		limit = defaultLimitEntries
-	}
-	var cap int
-	if limit <= defaultLimitEntries {
-		cap = limit
-	} else {
-		cap = defaultLimitEntries
-	}
 	var entry, position, found = z.entryWithPrefix(pointerAtPosition, chooseField, namespace, prefix)
 	var result []DirectoryEntry
 	if found {
-		result = make([]DirectoryEntry, 0, cap)
+		if limit <= 0 {
+			limit = defaultLimitEntries
+		}
+		var capacity int
+		if limit <= defaultLimitEntries {
+			capacity = limit
+		} else {
+			capacity = defaultLimitEntries
+		}
+		result = make([]DirectoryEntry, 0, capacity)
 		result = append(result, entry)
 		var entriesAdded = 1
 		var lastPosition = z.header.articleCount - 1
