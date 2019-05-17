@@ -208,11 +208,9 @@ func (z *File) entriesWithPrefix(
 		if limit <= 0 {
 			limit = defaultLimitEntries
 		}
-		var capacity int
+		var capacity = defaultLimitEntries
 		if limit <= defaultLimitEntries {
 			capacity = limit
-		} else {
-			capacity = defaultLimitEntries
 		}
 		result = make([]DirectoryEntry, 0, capacity)
 		result = append(result, entry)

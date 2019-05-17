@@ -7,15 +7,14 @@ import (
 
 // DirectoryEntry holds the information about a specific article, image or other object in a ZIM file.
 type DirectoryEntry struct {
-	mimetype      Mimetype
-	parameterLen  byte
-	namespace     Namespace
-	revision      uint32
-	clusterNumber uint32
-	blobNumber    uint32
-	redirectIndex uint32
-	url           []byte
-	title         []byte
+	mimetype                  Mimetype
+	parameterLen              byte
+	namespace                 Namespace
+	revision                  uint32
+	clusterNumber             uint32
+	blobNumberOrRedirectIndex uint32
+	url                       []byte
+	title                     []byte
 	//parameter     []byte    // (not used) extra parameters; see `parameterLen`
 }
 
@@ -47,12 +46,12 @@ func (e *DirectoryEntry) ClusterNumber() uint32 {
 
 // BlobNumber is the blob number inside the uncompressed cluster, where the contents are stored.
 func (e *DirectoryEntry) BlobNumber() uint32 {
-	return e.blobNumber
+	return e.blobNumberOrRedirectIndex
 }
 
 // RedirectIndex is a pointer to the Directory Entry of the Redirect Target.
 func (e *DirectoryEntry) RedirectIndex() uint32 {
-	return e.redirectIndex
+	return e.blobNumberOrRedirectIndex
 }
 
 // URL is the URL of the Directory Entry, which is unique for the specific Namespace.
@@ -79,14 +78,14 @@ func (z *File) readDirectoryEntry(filePosition uint64, maxRedirects uint8) Direc
 	case MimetypeDeletedEntry, MimetypeLinkTarget:
 		// no extra fields here
 	case MimetypeRedirectEntry:
-		result.redirectIndex = readUint32(z.f)
+		result.blobNumberOrRedirectIndex = readUint32(z.f) // redirectIndex
 		if maxRedirects > 0 {
-			return z.readDirectoryEntry(z.urlPointerAtPos(result.redirectIndex), maxRedirects-1)
+			return z.readDirectoryEntry(z.urlPointerAtPos(result.RedirectIndex()), maxRedirects-1)
 		}
 	default:
 		// Mimetype: ArticleEntry
 		result.clusterNumber = readUint32(z.f)
-		result.blobNumber = readUint32(z.f)
+		result.blobNumberOrRedirectIndex = readUint32(z.f) // blobNumber
 	}
 	result.url = readNullTerminatedSlice(z.f)
 	result.title = readNullTerminatedSlice(z.f)
@@ -149,7 +148,7 @@ func (z *File) FollowRedirect(redirectEntry *DirectoryEntry) (DirectoryEntry, er
 	if !redirectEntry.IsRedirect() {
 		return *redirectEntry, errors.New("zim: Directory Entry is not a Redirect Entry")
 	}
-	return z.readDirectoryEntry(z.urlPointerAtPos(redirectEntry.redirectIndex), 4), nil
+	return z.readDirectoryEntry(z.urlPointerAtPos(redirectEntry.RedirectIndex()), 4), nil
 }
 
 // MainPage returns the Directory Entry for the MainPage of the ZIM file

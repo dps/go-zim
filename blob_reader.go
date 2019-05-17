@@ -73,5 +73,5 @@ func (z *File) BlobReaderAt(clusterPosition, blobPosition uint32) (
 // BlobReader returns a LimitedReader for the blob data of the given Directory Entry.
 func (z *File) BlobReader(e *DirectoryEntry) (
 	reader io.Reader, blobSize int64, err error) {
-	return z.BlobReaderAt(e.clusterNumber, e.blobNumber)
+	return z.BlobReaderAt(e.ClusterNumber(), e.BlobNumber())
 }
