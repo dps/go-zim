@@ -1,3 +1,5 @@
+Forked from <https://godoc.org/github.com/tim-st/go-zim>.
+
 # go-zim
 Package `zim` implements reading support for the ZIM File Format.
 
