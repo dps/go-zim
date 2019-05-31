@@ -148,7 +148,7 @@ func cmpNs(ns1, ns2 Namespace) int {
 }
 
 func cmpPrefix(s, prefix []byte) int {
-	if bytes.HasPrefix(s, prefix) {
+	if bytes.HasPrefix(bytes.ToLower(s), bytes.ToLower(prefix)) {
 		return 0
 	}
 	return bytes.Compare(s, prefix)
