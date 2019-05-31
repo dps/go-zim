@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tim-st/go-zim"
+	"github.com/dps/go-zim"
 )
 
 func main() {
